@@ -9,7 +9,6 @@ import 'postDetail.dart';
 
 var unescape = HtmlUnescape();
 
-
 class Posts extends StatefulWidget {
   @override
   _PostsState createState() => _PostsState();
@@ -38,28 +37,39 @@ class _PostsState extends State<Posts> {
                               post), // Assuming PostDetailPage takes a 'post' argument
                     ));
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    margin: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          unescape.convert(post.title),
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        Text(DateFormat('MM/dd/yyyy').format(post.publishOn)),
-                        // show only date in month, day, year format
-
                         Container(
                           width: double.infinity,
-                          height: 400.0, // Fixed height for the image
+                          height: 350.0, // Fixed height for the image
                           child: Image.network(
                             post.assetUrl,
                             fit: BoxFit
                                 .cover, // Ensures the image covers the container area
                           ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                unescape.convert(post.title),
+                                style: const TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              Text(DateFormat('MM/dd/yyyy')
+                                  .format(post.publishOn)),
+                            ],
+                          ),
+                        ),
+                        // show only date in month, day, year format
                       ],
                     ),
                   ),
@@ -81,7 +91,14 @@ Future<List<Post>> fetchPosts() async {
       .get(Uri.parse('https://www.dirtyrootsberlin.com/blog?format=json'));
   if (response.statusCode == 200) {
     List<dynamic> posts = json.decode(response.body)['items'];
-    log(posts.toString());
+    // remove all noscript tags from the body
+    posts.forEach((post) {
+      post['body'] = post['body']
+          .replaceAll(RegExp(r'<noscript>.*?</noscript>'), '')
+          .replaceAll(RegExp(r'data-src'), 'src')
+          .replaceAll(RegExp(r'figure'), 'div')
+          .replaceAll(RegExp(r'pre'), 'div');
+    });
     return posts.map((post) => Post.fromJson(post)).toList();
   } else {
     throw Exception('Failed to load posts');

@@ -34,16 +34,20 @@ class PostDetailPage extends StatelessWidget {
   final Post post;
 
   const PostDetailPage({Key? key, required this.post}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(post.title),
       ),
-      body: SingleChildScrollView(
-        child: HtmlWidget(post.body),
+       body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0), // Add padding here
+          child: HtmlWidget(post.body
+            // customStylesBuilder: (element) => ,
+          ),
 
+        ),
       ),
     );
   }
