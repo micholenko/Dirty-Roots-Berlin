@@ -4,31 +4,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class Event {
-  final String id;
-  final String title;
-  final String assetUrl;
-  final String fullUrl;
-  final DateTime startDate;
-
-  Event(
-      {required this.id,
-      required this.title,
-      required this.assetUrl,
-      required this.fullUrl,
-      required this.startDate});
-
-  factory Event.fromJson(Map<String, dynamic> json) {
-    return Event(
-      id: json['id'],
-      title: json['title'],
-      assetUrl: json['assetUrl'],
-      fullUrl: json['fullUrl'],
-      startDate: DateTime.fromMillisecondsSinceEpoch(json['startDate']),
-      // startDate: json['startDate']
-    );
-  }
-}
+import 'eventDetail.dart';
 
 class Calendar extends StatefulWidget {
   @override
@@ -81,7 +57,20 @@ class _CalendarState extends State<Calendar> {
             title: Text('Events:'),
             content: SingleChildScrollView(
               child: ListBody(
-                children: dayEvents.map((event) => Text(event.title)).toList(),
+                children: dayEvents
+                    .map((event) => InkWell(
+                          onTap: () {
+                            // Navigate to the event detail page
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      EventDetail(event: event)),
+                            );
+                          },
+                          child: Text(event.title),
+                        ))
+                    .toList(),
               ),
             ),
             actions: <Widget>[
