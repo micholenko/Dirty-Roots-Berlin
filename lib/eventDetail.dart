@@ -3,26 +3,30 @@
 import 'package:flutter/material.dart';
 
 class Event {
-  final String id;
   final String title;
   final String assetUrl;
-  final String fullUrl;
   final DateTime startDate;
+  final DateTime endDate;
+  final String body;
 
-  Event(
-      {required this.id,
-      required this.title,
-      required this.assetUrl,
-      required this.fullUrl,
-      required this.startDate});
+  Event({
+    required this.title,
+    required this.assetUrl,
+    required this.startDate,
+    required this.endDate,
+    required this.body,
+  });
 
   factory Event.fromJson(Map<String, dynamic> json) {
+    dynamic item = json['item'];
+    print(item);
     return Event(
-      id: json['id'],
-      title: json['title'],
-      assetUrl: json['assetUrl'],
-      fullUrl: json['fullUrl'],
-      startDate: DateTime.fromMillisecondsSinceEpoch(json['startDate']),
+      title: item['title'],
+      assetUrl: item['assetUrl'],
+      startDate: DateTime.fromMillisecondsSinceEpoch(item['startDate']),
+      endDate: DateTime.fromMillisecondsSinceEpoch(item['endDate']),
+      body: item['body'],
+
       // startDate: json['startDate']
     );
   }
