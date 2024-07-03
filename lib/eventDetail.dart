@@ -19,7 +19,6 @@ class Event {
 
   factory Event.fromJson(Map<String, dynamic> json) {
     dynamic item = json['item'];
-    print(item);
     return Event(
       title: item['title'],
       assetUrl: item['assetUrl'],
