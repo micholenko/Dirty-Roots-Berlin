@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:developer';
-import 'package:intl/intl.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:hive/hive.dart';
 
 import 'postDetail.dart';
+import 'postSnippet.dart';
+
+import 'api.dart';
 
 var unescape = HtmlUnescape();
 
@@ -15,97 +17,50 @@ class Posts extends StatefulWidget {
 }
 
 class _PostsState extends State<Posts> {
+  late List<Post> postsBox;
+  bool isLoading = false;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    postsBox = Hive.box<Post>('posts').values.toList();
+    // sort posts by publish date
+    postsBox.sort((a, b) => (b.publishOn).compareTo(a.publishOn));
+    fetchPosts().then((posts) {
+      // if there is a new post in the API response, add it to the Hive box, set state to update the UI
+      if (postsBox.isNotEmpty && postsBox[0].id != posts[0].id) {
+        postsBox.insert(0, posts[0]);
+        Hive.box<Post>('posts').put(posts[0].id, posts[0]);
+        setState(() {});
+      }
+
+      
+    }).catchError((error) {
+      setState(() {
+        errorMessage = error.toString();
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: fetchPosts(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (snapshot.hasData && snapshot.data != null) {
-          return SingleChildScrollView(
-            child: Column(children: <Widget>[
-              for (Post post in snapshot.data!) ...[
-                InkWell(
-                  // Wrap with InkWell for tap detection
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => PostDetailPage(
-                          post:
-                              post), // Assuming PostDetailPage takes a 'post' argument
-                    ));
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          height: 350.0, // Fixed height for the image
-                          child: Image.network(
-                            post.assetUrl,
-                            fit: BoxFit
-                                .cover, // Ensures the image covers the container area
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                unescape.convert(post.title),
-                                style: const TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold),
-                              ),
-                              Text(DateFormat('MM/dd/yyyy')
-                                  .format(post.publishOn)),
-                            ],
-                          ),
-                        ),
-                        // show only date in month, day, year format
-                      ],
-                    ),
+    return Scaffold(
+      body: errorMessage != null
+          ? Center(child: Text('Error: $errorMessage'))
+          : postsBox.isEmpty
+              ? const Center(child: Text('No data available'))
+              : SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      for (Post post in postsBox) ...[
+                        PostSnippet(post: post)
+                      ]
+                    ],
                   ),
-                )
-              ]
-            ]),
-          );
-        } else {
-          return const Center(child: Text('No data available'));
-        }
-      },
+                ),
     );
   }
+
 }
 
-// create fetchPosts function to make an api call to get the posts
-Future<List<Post>> fetchPosts() async {
-  final response = await http
-      .get(Uri.parse('https://www.dirtyrootsberlin.com/blog?format=json'));
-  if (response.statusCode == 200) {
-    List<dynamic> posts = json.decode(response.body)['items'];
-    // remove all noscript tags from the body
-    posts.forEach((post) {
-      post['body'] = post['body']
-          .replaceAll(RegExp(r'<noscript>.*?</noscript>'), '')
-          .replaceAll(RegExp(r'data-src'), 'src')
-          .replaceAll(RegExp(r'figure'), 'div')
-          .replaceAll(RegExp(r'pre'), 'div');
-    });
-    return posts.map((post) => Post.fromJson(post)).toList();
-  } else {
-    throw Exception('Failed to load posts');
-  }
-}
-
-// create a Post class to hold the post data
-
-
-// create a PostDetailPage class to show the post detail

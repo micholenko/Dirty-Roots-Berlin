@@ -1,15 +1,26 @@
+import 'package:dirty_roots/home.dart';
+import 'package:dirty_roots/postDetail.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 
 import 'themeNotifier.dart';
 
+import 'home.dart';
 import 'posts.dart';
 import 'map.dart';
 import 'calendar.dart';
 import 'forum.dart';
 import 'settings.dart';
 
-void main() {
+void main() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter(PostAdapter());
+  await Hive.openBox<Post>('posts');
+
+
   runApp(ChangeNotifierProvider(
     create: (context) => ThemeNotifier(),
     child: const MyApp(),
@@ -76,6 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Define your tabs content here. For simplicity, we're using Text widgets.
   // Replace these with your actual widgets for each tab.
   static final List<Widget> _widgetOptions = <Widget>[
+    Home(),
     Posts(),
     Map(),
     Calendar(),
@@ -116,7 +128,11 @@ class _MyHomePageState extends State<MyHomePage> {
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.compost),
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book),
             label: 'Posts',
           ),
           BottomNavigationBarItem(
