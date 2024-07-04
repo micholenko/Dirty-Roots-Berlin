@@ -35,7 +35,6 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     postsBox = Hive.box<Post>('posts').values.toList();
-
     if (postsBox.isEmpty) {
       fetchPosts().then((posts) {
         postsBox = posts;
@@ -82,7 +81,7 @@ class _HomeState extends State<Home> {
                 ),
               ),
             ),
-            PostSnippet(post: postsBox[0]),
+            // PostSnippet(post: postsBox[0]),
 
             // instagram, youtube, facebook, tiktok, and website links
             Container(

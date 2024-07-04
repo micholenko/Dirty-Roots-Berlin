@@ -57,8 +57,7 @@ class PostSnippet extends StatelessWidget {
                 children: [
                   Text(
                     unescape.convert(post.title),
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Text(DateFormat('MM/dd/yyyy').format(post.publishOn)),
                 ],

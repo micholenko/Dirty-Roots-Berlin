@@ -1,6 +1,7 @@
 import 'package:dirty_roots/home.dart';
 import 'package:dirty_roots/postDetail.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -37,36 +38,36 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       themeMode: Provider.of<ThemeNotifier>(context).themeMode,
       theme: ThemeData(
-        primarySwatch: Colors.red,
-        colorScheme: ColorScheme.light(
-          primary: Colors.green,
-          onPrimary: Color(0xFF049391),
-          secondary: Colors.green,
-          onSecondary: Colors.white,
-          surface: Colors.white,
-          onSurface: Colors.black,
-          background: Colors.white,
-          onBackground: Colors.black,
+        appBarTheme: AppBarTheme(
+          titleTextStyle: GoogleFonts.belleza(
+            fontSize: 30.0,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+         ),
+        ),
+        colorScheme: const ColorScheme.light(
+          // primary: Colors.green,
+          // onPrimary: Color(0xFF049391),
+          // secondary: Colors.green,
+          // onSecondary: Colors.white,
+          // surface: Colors.white,
+          // onSurface: Colors.black,
+          // background: Colors.white,
+          // onBackground: Colors.black,
         ),
         textTheme: TextTheme(
-          bodyMedium: TextStyle(fontSize: 16.0, color: Colors.black),
+          bodyMedium: GoogleFonts.sourceSansPro(fontSize: 16.0, color: Colors.black),
+          // for title large assign font Minerva Modern
+          titleMedium: GoogleFonts.belleza(
+            fontSize: 20.0,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            // fontFamily: 'Minerva Modern',
+          ),
 
         ),
       ),
-      darkTheme: ThemeData(
-        primarySwatch: Colors.green,
-        colorScheme: ColorScheme.dark(
-          primary: Colors.green,
-          onPrimary: Colors.black,
-          secondary: Colors.green,
-          onSecondary: Colors.black,
-          surface: Colors.black,
-          onSurface: Colors.white,
-          background: Colors.black,
-          onBackground: Colors.white,
-        ),
-      ),
-      home: const MyHomePage(title: 'Dirty Roots Berlin'),
+      home: const MyHomePage(title: 'DIRTY ROOTS'),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -129,27 +130,29 @@ class _MyHomePageState extends State<MyHomePage> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: 'home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.menu_book),
-            label: 'Posts',
+            label: 'posts',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.map),
-            label: 'Map',
+            label: 'map',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
-            label: 'Calendar',
+            label: 'calendar',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.forum),
-            label: 'Forum',
+            label: 'forum',
           ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.green,
+        unselectedLabelStyle: GoogleFonts.belleza(fontSize: 12.0),
+        selectedLabelStyle: GoogleFonts.belleza(fontSize: 12.0),
         onTap: _onItemTapped,
       ),
     );

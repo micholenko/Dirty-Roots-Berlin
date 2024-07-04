@@ -17,25 +17,30 @@ class Posts extends StatefulWidget {
 }
 
 class _PostsState extends State<Posts> {
-  late List<Post> postsBox;
-  bool isLoading = false;
+  late Box<Post> postsBox;
+  late List<Post> postsList;
+  // sort posts list
   String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    postsBox = Hive.box<Post>('posts').values.toList();
+    postsBox = Hive.box<Post>('posts');
+    postsList = postsBox.values.toList();
+    postsList.sort((a, b) => (b.publishOn).compareTo(a.publishOn));
     // sort posts by publish date
-    postsBox.sort((a, b) => (b.publishOn).compareTo(a.publishOn));
+    // postsBox.sort((a, b) => (b.publishOn).compareTo(a.publishOn));
     fetchPosts().then((posts) {
       // if there is a new post in the API response, add it to the Hive box, set state to update the UI
-      if (postsBox.isNotEmpty && postsBox[0].id != posts[0].id) {
-        postsBox.insert(0, posts[0]);
-        Hive.box<Post>('posts').put(posts[0].id, posts[0]);
-        setState(() {});
+      for (Post post in posts) {
+        if (!postsBox.containsKey(post.id)) {
+          postsBox.put(post.id, post);
+          Hive.box<Post>('posts').put(post.id, post);
+        }
       }
-
-      
+      postsList = Hive.box<Post>('posts').values.toList();
+      postsList.sort((a, b) => (b.publishOn).compareTo(a.publishOn));
+      setState(() {});
     }).catchError((error) {
       setState(() {
         errorMessage = error.toString();
@@ -50,17 +55,16 @@ class _PostsState extends State<Posts> {
           ? Center(child: Text('Error: $errorMessage'))
           : postsBox.isEmpty
               ? const Center(child: Text('No data available'))
-              : SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      for (Post post in postsBox) ...[
-                        PostSnippet(post: post)
-                      ]
-                    ],
+              : Scrollbar(
+                child: SingleChildScrollView(
+                  // show scroll sidebar
+                    child: Column(
+                      children: <Widget>[
+                        for (Post post in postsList) ...[PostSnippet(post: post)]
+                      ],
+                    ),
                   ),
-                ),
+              ),
     );
   }
-
 }
-
