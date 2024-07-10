@@ -61,6 +61,7 @@ class _CalendarState extends State<Calendar> {
             children: [
       
               TableCalendar(
+                daysOfWeekHeight: 22.0,
 
                 eventLoader: (date) {
                   return eventIds[date] ?? [];
@@ -84,12 +85,34 @@ class _CalendarState extends State<Calendar> {
                   });
                 },
                 // change the dot for a plant icon
+                headerStyle: HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  leftChevronIcon: Icon(Icons.chevron_left, color: Colors.black),
+                  rightChevronIcon: Icon(Icons.chevron_right, color: Colors.black),
+                  titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
+                ),
                 calendarBuilders: CalendarBuilders(
                   singleMarkerBuilder: (context, date, event) {
                     return Icon(Icons.local_florist,
-                        size: 15.0, color: Colors.green);
+                        size: 14.0, color: Color(0xFF00201F));
                   },
                 ),
+                // color of the selected day
+                
+                calendarStyle: CalendarStyle(
+                  
+                  selectedDecoration: BoxDecoration(
+                    color: Color(0xFF049391),
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: Color(0xFF049391).withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  selectedTextStyle: TextStyle(color: Colors.white),
+
+                )
               ),
               ListView.builder(
                 key: _listKey,
@@ -102,7 +125,7 @@ class _CalendarState extends State<Calendar> {
                     future: fetchEvent(id!),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
+                        return Expanded(child: const Center(child: CircularProgressIndicator()));
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (snapshot.hasData && snapshot.data != null) {
