@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "369668101912",
+    "project_id": "dirty-roots",
+    "storage_bucket": "dirty-roots.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:369668101912:android:d9e6f79dd40b6e3798f06d",
+        "android_client_info": {
+          "package_name": "com.example.dirty_roots"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWsI0gQzD3IHGjJj1ZSyz6S5oYd9j6_HY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
