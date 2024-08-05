@@ -249,8 +249,8 @@ class _MyHomePageState extends State<MyHomePage> {
   static final List<Widget> _widgetOptions = <Widget>[
     Home(),
     Posts(),
-    Map(),
     Calendar(),
+    Map(),
     Forum(),
   ];
 
@@ -264,16 +264,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        // hide appbar when scrolling
-
-
-        // add icon to the left of the app bar from assets
-        // leading: Padding(
-        //   padding: const EdgeInsets.all(8.0),
-        //   child: Image.asset('assets/icon.png')),
-        // from theme
-        // backgroundColor: Theme.of(context).colorScheme.primary,   
+      appBar: _selectedIndex < 3 ? AppBar(
         title: Text(widget.title),
         actions: <Widget>[
           IconButton(
@@ -286,9 +277,11 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
         ],
-      ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
+      ): null,
+      body: SafeArea(
+        child: Center(
+          child: _widgetOptions.elementAt(_selectedIndex),
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -302,12 +295,12 @@ class _MyHomePageState extends State<MyHomePage> {
             label: 'posts',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'map',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'calendar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'map',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.forum),
