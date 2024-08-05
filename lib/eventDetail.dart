@@ -1,12 +1,25 @@
 // detail page of an event
 
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
-class Event {
+part 'eventDetail.g.dart';
+
+@HiveType(typeId: 1)
+class Event extends HiveObject {
+  @HiveField(0)
   final String title;
+
+  @HiveField(1)
   final String assetUrl;
+
+  @HiveField(2)
   final DateTime startDate;
+
+  @HiveField(3)
   final DateTime endDate;
+
+  @HiveField(4)
   final String body;
 
   Event({
@@ -25,8 +38,6 @@ class Event {
       startDate: DateTime.fromMillisecondsSinceEpoch(item['startDate']),
       endDate: DateTime.fromMillisecondsSinceEpoch(item['endDate']),
       body: item['body'],
-
-      // startDate: json['startDate']
     );
   }
 }

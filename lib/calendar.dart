@@ -8,6 +8,8 @@ import 'dart:async';
 
 import 'eventDetail.dart';
 
+import 'api.dart';
+
 class Calendar extends StatefulWidget {
   @override
   _CalendarState createState() => _CalendarState();
@@ -183,37 +185,6 @@ class _CalendarState extends State<Calendar> {
   }
 }
 
-Future<Map<DateTime, List<String>>?> fetchMonth(int year, int month) async {
-  final response = await http.get(Uri.parse(
-      'https://www.dirtyrootsberlin.com/api/open/GetItemsByMonth?month=${month.toString()}-${year.toString()}&collectionId=65e608bf2e643015e5d850e3'));
-  if (response.statusCode == 200) {
-    List<dynamic> events = json.decode(response.body);
-    Map<DateTime, List<String>> idMap = {};
-    for (var event in events) {
-      // remove time from startDate, leave only date
-      DateTime startDate =
-          DateTime.fromMicrosecondsSinceEpoch(event['startDate'] * 1000);
-      startDate = DateTime(startDate.year, startDate.month, startDate.day);
-      startDate = DateTime.parse(startDate.toString() + 'Z');
-      String id = event['fullUrl'];
-      if (idMap.containsKey(startDate)) {
-        idMap[startDate]!.add(id);
-      } else {
-        idMap[startDate] = [id];
-      }
-    }
-    return idMap;
-  } else {
-    throw Exception('Failed to load data');
-  }
-}
 
-Future<Event> fetchEvent(String id) async {
-  final response = await http
-      .get(Uri.parse('https://www.dirtyrootsberlin.com$id?format=json'));
-  if (response.statusCode == 200) {
-    return Event.fromJson(json.decode(response.body));
-  } else {
-    throw Exception('Failed to load event');
-  }
-}
+
+

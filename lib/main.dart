@@ -25,6 +25,7 @@ import 'calendar.dart';
 import 'forum.dart';
 import 'settings.dart';
 import 'postDetail.dart';
+import 'eventDetail.dart';  
 
 import 'api.dart';
 
@@ -35,6 +36,10 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(PostAdapter());
   await Hive.openBox<Post>('posts');
+
+  Hive.registerAdapter(EventAdapter());
+  await Hive.openBox<Event>('events');
+
 
   await Firebase.initializeApp();
   await FirebaseApi().initNotifications();

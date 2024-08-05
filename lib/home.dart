@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'posts.dart';
 import 'postDetail.dart';
 import 'postSnippet.dart';
+import 'eventSnippet.dart';
+import 'eventDetail.dart';
 
 import 'api.dart';
 
@@ -31,10 +33,14 @@ String _greeting() {
 
 class _HomeState extends State<Home> {
   late List<Post> postsBox;
+  late List<Event> eventsBox;
+  bool loading = true;
 
   void initState() {
-    super.initState();
+    loading = true;
+    super.initState();  
     postsBox = Hive.box<Post>('posts').values.toList();
+    eventsBox = Hive.box<Event>('events').values.toList();
     if (postsBox.isEmpty) {
       fetchPosts().then((posts) {
         postsBox = posts;
@@ -46,6 +52,39 @@ class _HomeState extends State<Home> {
       });
     }
     postsBox.sort((a, b) => (b.publishOn).compareTo(a.publishOn));
+    print(eventsBox.isEmpty);
+    if (eventsBox.isEmpty) {
+      fetchMonth(DateTime.now().year, DateTime.now().month).then((events) {
+        List<String> eventIds = events!.values.toList().expand((element) => element).toList();
+        for (var event in eventIds) {
+          fetchEvent(event).then((event) {
+            eventsBox.add(event);
+            Hive.box<Event>('events').put(event.title, event);
+          }).catchError((error) {
+            print('Error: $error');
+          });
+        }
+        setState(() {});
+      }).catchError((error) {
+        setState(() {
+          print('Error: $error');
+        });
+      });
+    }
+    print(eventsBox);
+    eventsBox.sort((a, b) => (a.startDate).compareTo(b.startDate));
+    loading = false;
+
+  }
+
+  _findUpcomingEvent(List<Event> events) {
+    DateTime now = DateTime.now();
+    for (var event in events) {
+      if (event.startDate.isAfter(now)) {
+        return event;
+      }
+    }
+    return null;
   }
 
   @override
@@ -81,9 +120,29 @@ class _HomeState extends State<Home> {
                 ),
               ),
             ),
-            // PostSnippet(post: postsBox[0]),
+            // show the latest post
+            postsBox.isEmpty
+                ? Center(child: Text('No data available'))
+                : PostSnippet(post: postsBox[0]),
 
-            // instagram, youtube, facebook, tiktok, and website links
+            // PostSnippet(post: postsBox[0]),
+            Container(
+              padding: EdgeInsets.only(top: 20),
+              child: Text(
+                'Upcoming Event',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            // show the upcoming event
+            loading
+                ? Center(child: CircularProgressIndicator())
+                : eventsBox.isEmpty
+                    ? Center(child: Text('No data available'))
+                    : EventSnippet(event: _findUpcomingEvent(eventsBox)),
             Container(
               padding: EdgeInsets.only(top: 20),
               child: Text(
@@ -122,8 +181,31 @@ class _HomeState extends State<Home> {
                 ),
               ],
             ),
+          Container(
+            padding: EdgeInsets.only(top: 20),
+            child: Text(
+              'Check out the website',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          // website link button with icon and text
+          ElevatedButton.icon(
+            onPressed: () => launchUrl(Uri.parse('https://www.dirtyrootsberlin.com/')),
+            icon: FaIcon(FontAwesomeIcons.globe),
+            label: Text('Dirty Roots Berlin'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              textStyle: TextStyle(
+                fontSize: 20,
+              ),
+            ),
+          ),
+
+          
           ],
-          // include the latest post in hive box here
         ),
       ),
     );
