@@ -6,13 +6,19 @@ import 'postDetail.dart';
 
 import 'eventDetail.dart';
 
-
-Future<List<Post>> fetchPosts() async {
+// add optional parameter to fetchPosts
+Future<Map<String, dynamic>> fetchPosts([String nextPageUrl = '']) async {
+    String url = 'https://www.dirtyrootsberlin.com/blog?format=json';
+    if (nextPageUrl != '') {
+      url = 'https://www.dirtyrootsberlin.com$nextPageUrl&format=json';
+    }
+    print(url);
     try {
       final response = await http
-          .get(Uri.parse('https://www.dirtyrootsberlin.com/blog?format=json'));
+          .get(Uri.parse(url));
       if (response.statusCode == 200) {
-        List<dynamic> posts = json.decode(response.body)['items'];
+        dynamic decoded = json.decode(response.body);
+        List<dynamic> posts = decoded['items'];
         posts.forEach((post) {
           post['body'] = post['body']
               .replaceAll(RegExp(r'<noscript>.*?</noscript>'), '')
@@ -20,7 +26,15 @@ Future<List<Post>> fetchPosts() async {
               .replaceAll(RegExp(r'figure'), 'div')
               .replaceAll(RegExp(r'pre'), 'div');
         });
-        return posts.map((post) => Post.fromJson(post)).toList();
+        String nextUrl = '';
+        // check if the nextPageUrl key exists in the decoded JSON
+        if (decoded['pagination']['nextPageUrl'] != null)
+          nextUrl = decoded['pagination']['nextPageUrl'];
+        List<Post> retPosts = posts.map((post) => Post.fromJson(post)).toList();
+        return {
+          'posts': retPosts,
+          'nextPageUrl': nextUrl,
+        };
       } else {
         throw Exception('Failed to load posts');
       }

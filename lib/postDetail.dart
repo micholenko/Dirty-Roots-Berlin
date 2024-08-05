@@ -75,13 +75,26 @@ class PostDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(post.title),
+        // title: Text(''),
       ),
        body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0), // Add padding here
-          child: HtmlWidget(post.body
-            // customStylesBuilder: (element) => ,
+          child: Column(
+            children: [
+              SizedBox(height: 10),
+              Text(
+                post.title,
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 10),
+              HtmlWidget(post.body
+                // customStylesBuilder: (element) => ,
+              ),
+            ],
           ),
 
         ),

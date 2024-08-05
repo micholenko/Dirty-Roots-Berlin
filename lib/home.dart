@@ -42,8 +42,8 @@ class _HomeState extends State<Home> {
     postsBox = Hive.box<Post>('posts').values.toList();
     eventsBox = Hive.box<Event>('events').values.toList();
     if (postsBox.isEmpty) {
-      fetchPosts().then((posts) {
-        postsBox = posts;
+      fetchPosts().then((ret) {
+        postsBox = ret['posts'];
         setState(() {});
       }).catchError((error) {
         setState(() {

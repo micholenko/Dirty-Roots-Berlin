@@ -23,12 +23,13 @@ class PostSnippet extends StatelessWidget {
         ));
       },
       child: Container(
-        margin: const EdgeInsets.all(8.0),
+        // margin: const EdgeInsets.all(16.0),
         // round the corners of the container
 
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
+          border: Border.all(color: Colors.grey[200]!),
           borderRadius: BorderRadius.circular(10.0),
+          color: Colors.white,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
