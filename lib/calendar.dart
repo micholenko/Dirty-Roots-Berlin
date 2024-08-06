@@ -5,10 +5,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'dart:async';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import 'eventDetail.dart';
 
 import 'api.dart';
+
+import 'providers/focusDateProvider.dart';
 
 class Calendar extends StatefulWidget {
   @override
@@ -20,12 +24,15 @@ class _CalendarState extends State<Calendar> {
   DateTime _focusedDay = DateTime.now();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _listKey = GlobalKey();
+  bool loading = false;
 
   @override
   void initState() {
     super.initState();
     // Initially fetch eventIds for the current month
     _fetchEventsForMonth(DateTime.now().year, DateTime.now().month);
+    _focusedDay = Provider.of<FocusDateProvider>(context, listen: false).focusDate;
+    Provider.of<FocusDateProvider>(context, listen: false).setFocusDate(DateTime.now());
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToTarget());
   }
 
@@ -36,16 +43,19 @@ class _CalendarState extends State<Calendar> {
         _listKey.currentContext!,
         duration: Duration(milliseconds: 500),
         curve: Curves.easeInOut,
-        
       );
     });
   }
 
   Future<void> _fetchEventsForMonth(int year, int month) async {
+    setState(() {
+      loading = true;
+    });
     var fetchedEvents = await fetchMonth(year, month);
     if (fetchedEvents != null) {
       setState(() {
         eventIds = fetchedEvents;
+        loading = false;
       });
     }
   }
@@ -57,14 +67,14 @@ class _CalendarState extends State<Calendar> {
       height: MediaQuery.of(context).size.height,
       child: SingleChildScrollView(
         controller: _scrollController,
-          // make it so that the calendar is at the top of the screen, and the dynamic list of events fits below it
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-      
-              TableCalendar(
+        // make it so that the calendar is at the top of the screen, and the dynamic list of events fits below it
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                TableCalendar(
                 daysOfWeekHeight: 22.0,
-
                 eventLoader: (date) {
                   return eventIds[date] ?? [];
                 },
@@ -90,8 +100,10 @@ class _CalendarState extends State<Calendar> {
                 headerStyle: HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
-                  leftChevronIcon: Icon(Icons.chevron_left, color: Colors.black),
-                  rightChevronIcon: Icon(Icons.chevron_right, color: Colors.black),
+                  leftChevronIcon:
+                      Icon(Icons.chevron_left, color: Colors.black),
+                  rightChevronIcon:
+                      Icon(Icons.chevron_right, color: Colors.black),
                   titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
                 ),
                 calendarBuilders: CalendarBuilders(
@@ -101,9 +113,8 @@ class _CalendarState extends State<Calendar> {
                   },
                 ),
                 // color of the selected day
-                
+
                 calendarStyle: CalendarStyle(
-                  
                   selectedDecoration: BoxDecoration(
                     color: Color(0xFF049391),
                     shape: BoxShape.circle,
@@ -113,69 +124,89 @@ class _CalendarState extends State<Calendar> {
                     shape: BoxShape.circle,
                   ),
                   selectedTextStyle: TextStyle(color: Colors.white),
+                )),
+                if (loading)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.white.withOpacity(0.5),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                  ),
 
-                )
-              ),
-              ListView.builder(
-                key: _listKey,
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: eventIds[_focusedDay]?.length ?? 0,
-                itemBuilder: (context, index) {
-                  var id = eventIds[_focusedDay]?[index];
-                  return FutureBuilder(
-                    future: fetchEvent(id!),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Expanded(child: const Center(child: CircularProgressIndicator()));
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (snapshot.hasData && snapshot.data != null) {
-                       
+              ],
+            ),
+            
+            ListView.builder(
+              key: _listKey,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: eventIds[_focusedDay]?.length ?? 0,
+              itemBuilder: (context, index) {
+                var id = eventIds[_focusedDay]?[index];
+                return FutureBuilder(
+                  future: fetchEvent(id!),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Expanded(
+                          child:
+                              const Center(child: CircularProgressIndicator()));
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (snapshot.hasData && snapshot.data != null) {
+                      return FutureBuilder(
+                          future: _loadImage(snapshot.data!.assetUrl),
+                          builder: (context, imageSnapshot) {
+                            if (imageSnapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            } else if (imageSnapshot.hasError) {
+                              return Center(child: Text('Error loading image'));
+                            } else {
+                              _scrollToTarget();
 
-                        return FutureBuilder(
-                        future: _loadImage(snapshot.data!.assetUrl),
-                        builder: (context, imageSnapshot) {
-                          if (imageSnapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
-                          } else if (imageSnapshot.hasError) {
-                            return Center(child: Text('Error loading image'));
-                          } else {
-                            _scrollToTarget();
-
-                            return Padding(
-                              // top padding to separate events
-                              padding: const EdgeInsets.only(top: 20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Image.network(snapshot.data!.assetUrl),
-                                  Text(snapshot.data!.title, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-                                  Text(snapshot.data!.startDate.toString()),
-                                  HtmlWidget(snapshot.data!.body),
-                                ],
-                              ),
-                            );
-                          }
-
-                        });
-                      } else {
-                        return const Center(child: Text('No data'));
-                      }
-                    },
-                  );
-                },
-              ),
-            ],
-          ),
+                              return Padding(
+                                // top padding to separate events
+                                padding: const EdgeInsets.only(top: 20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Image.network(snapshot.data!.assetUrl),
+                                    Text(snapshot.data!.title,
+                                        style: const TextStyle(
+                                            fontSize: 30,
+                                            fontWeight: FontWeight.bold)),
+                                    Text(
+                                        DateFormat('EEEE, MMMM d, y')
+                                            .format(snapshot.data!.startDate),
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.grey)),
+                                    HtmlWidget(snapshot.data!.body),
+                                  ],
+                                ),
+                              );
+                            }
+                          });
+                    } else {
+                      return const Center(child: Text('No data'));
+                    }
+                  },
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
- Future<void> _loadImage(String url) {
+  Future<void> _loadImage(String url) {
     final completer = Completer<void>();
     final image = Image.network(url);
-    final listener = ImageStreamListener((ImageInfo info, bool synchronousCall) {
+    final listener =
+        ImageStreamListener((ImageInfo info, bool synchronousCall) {
       completer.complete();
     }, onError: (dynamic error, StackTrace? stackTrace) {
       completer.completeError(error);
@@ -184,7 +215,3 @@ class _CalendarState extends State<Calendar> {
     return completer.future;
   }
 }
-
-
-
-

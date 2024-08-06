@@ -1,6 +1,7 @@
 import 'package:dirty_roots/home.dart';
 import 'package:dirty_roots/notifications/firebase_notifications.dart';
 import 'package:dirty_roots/postDetail.dart';
+import 'package:dirty_roots/providers/focusDateProvider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -45,7 +46,7 @@ void main() async {
   await FirebaseApi().initNotifications();
 
   runApp(ChangeNotifierProvider(
-    create: (context) => ThemeNotifier(),
+    create: (context) => FocusDateProvider(),
     child: MyApp(),
   ));
 }
@@ -90,7 +91,7 @@ class MyApp extends StatelessWidget {
       ]);
     return MaterialApp(
         navigatorKey: navigatorKey,
-        title: 'Flutter Demo',
+        title: 'DIRTY ROOTS',
         
         // themeMode: Provider.of<ThemeNotifier>(context).themeMode,
         theme: ThemeData(
@@ -136,6 +137,7 @@ class MyApp extends StatelessWidget {
               fontWeight: FontWeight.bold,
               // fontFamily: 'Minerva Modern',
             ),
+          
           ),
         ),
 
@@ -191,6 +193,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0; // Add this line
+  List<Widget> _widgetOptions = <Widget>[]; // Add this line
 
   // Define your tabs content here. For simplicity, we're using Text widgets.
   // Replace these with your actual widgets for each tab.
@@ -200,6 +203,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void initState() {
     super.initState();
+    _widgetOptions = <Widget>[
+      Home(onEventSnippetTap: _onItemTapped),
+      Posts(),
+      Calendar(),
+      Map(),
+      Forum(),
+    ];
     _scheduleBlogPostCheck();
   }
 
@@ -246,20 +256,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  static final List<Widget> _widgetOptions = <Widget>[
-    Home(),
-    Posts(),
-    Calendar(),
-    Map(),
-    Forum(),
-  ];
-
   void _onItemTapped(int index) {
     // Add this method
     setState(() {
       _selectedIndex = index;
     });
   }
+  
 
   @override
   Widget build(BuildContext context) {

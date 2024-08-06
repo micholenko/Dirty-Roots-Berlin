@@ -12,7 +12,13 @@ import 'eventDetail.dart';
 
 import 'api.dart';
 
+// function as a parameter
+
 class Home extends StatefulWidget {
+  final Function onEventSnippetTap;
+
+  Home({required this.onEventSnippetTap});
+
   @override
   _HomeState createState() => _HomeState();
 }
@@ -91,6 +97,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20),
+      color: Colors.grey[200],
       height: MediaQuery.of(context).size.height,
       child: SingleChildScrollView(
         // make it so that the calendar is at the top of the screen, and the dynamic list of events fits below it
@@ -142,7 +149,7 @@ class _HomeState extends State<Home> {
                 ? Center(child: CircularProgressIndicator())
                 : eventsBox.isEmpty
                     ? Center(child: Text('No data available'))
-                    : EventSnippet(event: _findUpcomingEvent(eventsBox)),
+                    : EventSnippet(event: _findUpcomingEvent(eventsBox), onTap: widget.onEventSnippetTap),
             Container(
               padding: EdgeInsets.only(top: 20),
               child: Text(

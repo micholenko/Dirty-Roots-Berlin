@@ -60,7 +60,12 @@ class PostSnippet extends StatelessWidget {
                     unescape.convert(post.title),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  Text(DateFormat('MM/dd/yyyy').format(post.publishOn)),
+                  Text(DateFormat('MMMM d, y').format(post.publishOn),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
                 ],
               ),
             ),
